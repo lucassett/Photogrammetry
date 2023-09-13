@@ -29,10 +29,12 @@ def rotate_x_around_z_by_r(xx, xy, zx, zy, r):
     BRFPy = BRFP[1,0]/BRFP[2,0]
     return (BRFPx, BRFPy)
 
-def camera(r, zx, zy, c, xx, xy):
+def camera(r, zx, zy, c, xx, xy, h=0):
     rotx, roty = rotate_x_around_z_by_r(xx, xy, zx, zy, -r)
-    x = camera_r0(zx, zy, c, rotx, roty)
+    x = camera_r0(zx, zy, c, rotx, roty) + h
     return x
+
+
 
 
 
@@ -47,16 +49,37 @@ if __name__ == '__main__':
 
     test3 = camera_r0(2, 3, 2, 10, 5)
     print(test3)
-    #should be:
+    #should be: 8
 
     test4x, test4y = rotate_x_around_z_by_r(2, 3, 1, 1, math.radians(90))
     print(test4x, test4y)
+    #should be: -1, 2
 
     test5 = camera(math.radians(45), 1, 1, math.sqrt(2), 1, 8)
     print(test5)
     print(math.sqrt(2))
 
     #should be: sqrt(2)
+
+
+    with open('input.csv') as csv:
+        for line in csv:
+            #print(line)
+            parameters = []
+            dpt = line.split(',')       #Returns list of strings
+            if dpt[0]=='cam_x':
+                continue
+
+            for element in dpt[:-1]:
+                fdpt = float(element)
+                parameters.append(fdpt)
+
+            cam_x, cam_y, cam_r, cam_c, cam_h, p_x, p_y, img_x = parameters
+            csv_test = camera(math.radians(cam_r), cam_x, cam_y, cam_c, p_x, p_y, cam_h)
+            error=csv_test - img_x
+            print(csv_test, error)
+
+
 
 
 
