@@ -14,6 +14,7 @@
 import math
 import numpy as np
 
+
 def camera_r0_z0_c1(xx, xy):
     '''Project a point (x,y) in the 2D world onto a 1D surface (a line), located 1 unit away from the camera (c=1; aka focal length).
         The camera is located at the origin (z=0), and is looking along the y axis (r=0).'''
@@ -58,6 +59,31 @@ def camera(r, zx, zy, c, xx, xy, h=0):
     x = camera_r0(zx, zy, c, rotx, roty) + h
     return x
 
+def extrinsic(exzx, exzy, extheta):
+    exR = np.array([[np.cos(extheta), np.sin(extheta)], [-np.sin(extheta), np.cos(extheta)]])
+    exRz = exR @ np.array([[exzx], [exzy]])
+    ext_mtx = np.block([
+        [exR, -exRz],
+        [0, 0, 1],
+    ])
+    return ext_mtx
+
+def intrinsic(focal_length, principal_offset):
+    return np.array([
+        [focal_length, principal_offset],
+        [0, 1],
+    ])
+
+def hc(inhomogeneous_coord):
+    return np.append(np.asarray(inhomogeneous_coord), 1)
+
+#Inhomogeneous Coordinates
+def ic(homogeneous_coord):
+    return homogeneous_coord[:-1] / homogeneous_coord[-1]
+
+def ext_camera(cx, cy, r, c, h):
+    return intrinsic(c, h) @ np.eye(2,3) @ extrinsic(cx, cy, r)
+
 
 
 
@@ -101,8 +127,22 @@ if __name__ == '__main__':
 
             cam_x, cam_y, cam_r, cam_c, cam_h, p_x, p_y, img_x = parameters
             csv_test = camera(math.radians(cam_r), cam_x, cam_y, cam_c, p_x, p_y, cam_h)
-            error=csv_test - img_x
+            error = csv_test - img_x
             print(csv_test, error)
+
+            # testext3 = ext_camera(cam_x, cam_y, math.radians(cam_r), cam_c, cam_h)
+            # stophere=1
+
+            ext_mtx = extrinsic(cam_x, cam_y, math.radians(cam_r))
+            img_point = hc([p_x, p_y])
+            testext2 = ext_mtx @ img_point
+            reduced = np.eye(2,3) @ testext2
+            unit_cam_ans = ic(reduced)
+            int_mtx = intrinsic(cam_c, cam_h)
+            homogeneous_ans = int_mtx @ reduced
+            answer = ic(homogeneous_ans)
+            ext_error = answer - csv_test
+            stophere = 1
 
 
 
