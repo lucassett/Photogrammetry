@@ -68,8 +68,8 @@ def hc(inhomogeneous_coord):
 def ic(homogeneous_coord):
     return homogeneous_coord[:-1] / homogeneous_coord[-1]
 
-def CAMERA(cx, cy, cz, r, c, hx, hy):
-    return intrinsic(c, hx, hy) @ np.eye(3,4) @ extrinsic(cx, cy, cz, r)
+def CAMERA(cx, cy, cz, roll, pitch, yaw, c, hx, hy):
+    return intrinsic(c, hx, hy) @ np.eye(3,4) @ extrinsic(cx, cy, cz, roll, pitch, yaw)
 
 
 
@@ -77,24 +77,27 @@ if __name__ == '__main__':
     ext_test = extrinsic(0, 0, 0, rad(0), rad(0), rad(0))
     stophere=1
 
-    # with open('HW3_input.csv') as csv:
-    #     for line in csv:
-    #         #print(line)
-    #         parameters = []
-    #         dpt = line.split(',')       #Returns list of strings
-    #         if dpt[0]=='cam_x':
-    #             continue
-    #
-    #         for element in dpt[:]:
-    #             fdpt = float(element)
-    #             parameters.append(fdpt)
-    #
-    #         cam_x, cam_y, cam_z, yaw, pitch, roll, cam_c, pp_x, pp_y, p_x, p_y, p_z, img_x, img_y = parameters
-    #         #csv_test = CAMERA(cam_x, cam_y, cam_z, 'R', cam_c, pp_x, pp_y)
-    #
-    #         ext_mtx = extrinsic(cam_x, cam_y, cam_z, rad(0))
-    #         img_point = hc([p_x, p_y, p_z])
-    #         test_ext = ext_mtx @ img_point
-    #         reduced = np.eye(3,4) @ test_ext
-    #         unit_cam_ans = ic(reduced)
-            #stophere=1
+    with open('HW3_input.csv') as csv:
+        for line in csv:
+            #print(line)
+            parameters = []
+            dpt = line.split(',')       #Returns list of strings
+            if dpt[0]=='cam_x':
+                continue
+
+            for element in range(len(dpt)):
+                fdpt = float(dpt[element])
+                parameters.append(fdpt)
+
+            cam_x, cam_y, cam_z, yaw, pitch, roll, cam_c, pp_x, pp_y, p_x, p_y, p_z, img_x, img_y = parameters
+            #csv_test = CAMERA(cam_x, cam_y, cam_z, 'R', cam_c, pp_x, pp_y)
+
+            ext_mtx = extrinsic(cam_x, cam_y, cam_z, roll, pitch, yaw)
+            img_point = hc([p_x, p_y, p_z])
+            test_ext = ext_mtx @ img_point
+            reduced = np.eye(3,4) @ test_ext
+            int_mtx = intrinsic(cam_c,pp_x, pp_y)
+            homogeneous_ans = int_mtx @ reduced
+            stophere = 1
+            #unit_cam_ans = ic(reduced)
+
