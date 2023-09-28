@@ -26,9 +26,13 @@ def Rz(yaw):
     ])
 
 def R(roll, pitch, yaw):
-    rotx = Rx(roll)
-    roty = Ry(pitch)
-    rotz = Rz(yaw)
+    '''
+    No idea here why this works with each value as a negative
+    '''
+
+    rotx = Rx(-roll)
+    roty = Ry(-pitch)
+    rotz = Rz(-yaw)
     return rotx @ roty @ rotz
 
 def extrinsic(zx, zy, zz, roll, pitch, yaw):
@@ -69,7 +73,16 @@ def ic(homogeneous_coord):
     return homogeneous_coord[:-1] / homogeneous_coord[-1]
 
 def CAMERA(cx, cy, cz, roll, pitch, yaw, c, hx, hy):
-    return intrinsic(c, hx, hy) @ np.eye(3,4) @ extrinsic(cx, cy, cz, roll, pitch, yaw)
+    '''I know x and z needed to be swapped, but this was also done by trial and error - do not understand how to swap axes
+    smartly.
+    '''
+    swap_mtx = np.array([
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [1, 0, 0, 0],
+        [0, 0, 0, 1],
+    ])
+    return intrinsic(c, hx, hy) @ np.eye(3,4) @ swap_mtx @ extrinsic(cx, cy, cz, roll, pitch, yaw)
 
 
 
@@ -78,6 +91,7 @@ if __name__ == '__main__':
     stophere=1
 
     with open('HW3_input.csv') as csv:
+        count = 0
         for line in csv:
             #print(line)
             parameters = []
@@ -90,14 +104,26 @@ if __name__ == '__main__':
                 parameters.append(fdpt)
 
             cam_x, cam_y, cam_z, yaw, pitch, roll, cam_c, pp_x, pp_y, p_x, p_y, p_z, img_x, img_y = parameters
-            #csv_test = CAMERA(cam_x, cam_y, cam_z, 'R', cam_c, pp_x, pp_y)
 
-            ext_mtx = extrinsic(cam_x, cam_y, cam_z, roll, pitch, yaw)
-            img_point = hc([p_x, p_y, p_z])
-            test_ext = ext_mtx @ img_point
-            reduced = np.eye(3,4) @ test_ext
-            int_mtx = intrinsic(cam_c,pp_x, pp_y)
-            homogeneous_ans = int_mtx @ reduced
+
+
+            # ext_mtx = extrinsic(cam_x, cam_y, cam_z, roll, pitch, yaw)
+            # img_point = hc([p_x, p_y, p_z])
+            # test_ext = ext_mtx @ img_point
+            # swap = swap_mtx @ test_ext
+            # reduced = np.eye(3,4) @ swap
+            # int_mtx = intrinsic(cam_c, pp_x, pp_y)
+            # homogeneous_ans = int_mtx @ reduced
+            # unit_cam_ans = ic(homogeneous_ans)
+            csv_test = CAMERA(cam_x, cam_y, cam_z, rad(roll), rad(pitch), rad(yaw), cam_c, pp_x, pp_y) @ hc([p_x, p_y, p_z])
+            unit_cam_ans = ic(csv_test)
+            error = unit_cam_ans - np.array([img_x, img_y])
+
+            count += 1
+            print(count)
+            print(unit_cam_ans)
+            print(error)
             stophere = 1
             #unit_cam_ans = ic(reduced)
+
 
