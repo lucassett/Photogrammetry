@@ -1,0 +1,53 @@
+import numpy as np
+
+#Problem: Least Squares Adjustment of measurements of angles of a triangle
+    #Angles are in degrees
+    #One-sigma precisions of each measurement are 0.5 degrees of standard deviation
+    #Measurements are uncorrelated (current angle total = 181deg)
+
+#Method 1: Observations Only
+    #n = 3
+    #n0 = 2
+    #r = 1
+    #u = 0
+    #c = 1
+
+sigma = np.eye(3) * 0.25
+A = np.array([[1, 1, 1]])
+Atran = A.transpose()
+
+#Measurements
+l1 = 35
+l2 = 70
+l3 = 76
+f = np.array([[180 - l1 -l2 - l3]])
+
+#Equivalent covariance matrix
+sig_e = A @ sigma @ Atran
+print('SIGMA_e is:', sig_e)
+
+#Equivalent weight matrix
+W = np.linalg.inv(sig_e)
+print('W is:', W)
+
+#Residuals
+v = sigma @ Atran @ W @ f
+print('v is:', v)
+
+#Covariance of residuals
+sigma_v = sigma @ Atran @ W @ A @ sigma
+print('SIGMA_v is:', sigma_v)
+
+#Adjusted observations
+l = np.array([[l1], [l2], [l3]])
+l_hat = l + v
+print('L_hat is:', l_hat)
+
+#Covariance matrix of adjusted observations
+sigma_lhat = sigma - sigma_v
+print('SIGMA_lhat is:', sigma_lhat)
+
+
+#Method 2: Indirect Observations
+
+stophere=1
