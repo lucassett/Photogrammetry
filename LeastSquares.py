@@ -21,6 +21,7 @@ l1 = 35
 l2 = 70
 l3 = 76
 f = np.array([[180 - l1 -l2 - l3]])
+print('f is:', f)
 
 #Equivalent covariance matrix
 sig_e = A @ sigma @ Atran
@@ -49,5 +50,43 @@ print('SIGMA_lhat is:', sigma_lhat)
 
 
 #Method 2: Indirect Observations
+    #n = 3
+    #n0 = 2
+    #r = 1
+    #u = 2
+    #c = 3
 
-stophere=1
+B = np.array([
+    [-1, 0],
+    [0, -1],
+    [1, 1],
+])
+f2 = np.array([[0], [0], [180]])
+Btran = B.transpose()
+W2 = np.linalg.inv(sigma)
+
+N = Btran @ W2 @ B
+print('N is:', N)
+
+t = Btran @ W2 @ f2
+print('t is:', t)
+
+#Parameter values
+delta = N / t
+print('DELTA is:', delta)
+
+#Residuals
+v2 = f2 - (B @ delta)
+print('V is:', v2)
+
+#Covariance of parameters
+sig_delta = np.linalg.inv(N)
+print('SIGMA_delta is:', sig_delta)
+
+#Covariance of Residuals
+sigma_v2 = sigma - (B @ sig_delta @ Btran)
+print('SIGMA_v is:', sigma_v2)
+
+if sigma_v.all() == sigma_v2.all():
+    print('SIGMA_v for Observations same as SIGMA_v for Indirect')
+
