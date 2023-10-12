@@ -87,6 +87,13 @@ print('SIGMA_delta is:', sig_delta)
 sigma_v2 = sigma - (B @ sig_delta @ Btran)
 print('SIGMA_v is:', sigma_v2)
 
-if sigma_v.all() == sigma_v2.all():
-    print('SIGMA_v for Observations same as SIGMA_v for Indirect')
+#Covariance Matrix of adjusted observations
+sigma_lhat2 = sigma - sigma_v2
+print('SIGMA_lhat is:', sigma_lhat2)
+
+print('OO SIGMA_lhat is:', sigma_lhat)
+print('IO SIGMA_lhat is:', sigma_lhat2)
+
+equality_check = sigma_lhat - sigma_lhat2
+print('Difference between OO and IO covariance is:', equality_check)
 
